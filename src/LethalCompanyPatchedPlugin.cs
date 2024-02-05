@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -18,6 +20,7 @@ namespace OoLunar.LethalCompanyPatched
         internal static ConfigEntry<bool> InstantJump = null!;
         internal static ConfigEntry<bool> ShowHudPercentages = null!;
 
+        [SuppressMessage("Roslyn", "IDE0051", Justification = "Unity will call this method through reflection. Should've been an interface method but w/e.")]
         private void Awake()
         {
             // Plugin startup logic
@@ -30,8 +33,8 @@ namespace OoLunar.LethalCompanyPatched
             ShowHudPercentages = Config.Bind("General", "showHealthStamina", true, "Show your health and sprint/stamina % on the HUD.");
             foreach (Type type in typeof(LethalCompanyPatchedPlugin).Assembly.GetTypes())
             {
-                // Find all types in this assembly that inherit from `IPatch` and pass them to Harmony.
-                if (type.GetInterface(nameof(IPatch)) != null)
+                // Find all types in this assembly that have the LethalPatchAttribute applied to them.
+                if (type.GetCustomAttribute<LethalPatchAttribute>() is not null)
                 {
                     _harmony.PatchAll(type);
                 }

@@ -7,8 +7,8 @@ using UnityEngine;
 
 namespace OoLunar.LethalCompanyPatched.Patches
 {
-    [HarmonyPatch(typeof(PlayerControllerB))]
-    internal class PlayerControllerPatch : IPatch
+    [HarmonyPatch(typeof(PlayerControllerB)), LethalPatch]
+    internal class PlayerControllerPatch
     {
         private static readonly FieldInfo _playerCarryWeight = typeof(PlayerControllerB).GetField("carryWeight");
         private static bool _tempCrouch = false;

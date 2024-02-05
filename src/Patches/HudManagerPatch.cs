@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace OoLunar.LethalCompanyPatched.Patches
 {
-    [HarmonyPatch]
-    internal class HUDManagerPatch : MonoBehaviour, IPatch
+    [HarmonyPatch, LethalPatch]
+    internal class HUDManagerPatch : MonoBehaviour
     {
         private static bool _instantiating = true;
         private static TextMeshProUGUI? _hudPercentagesText;

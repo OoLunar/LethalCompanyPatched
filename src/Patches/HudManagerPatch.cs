@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace OoLunar.LethalCompanyPatched.Patches
 {
-    [HarmonyPatch, LethalPatch]
+    [HarmonyPatch]
     internal class HUDManagerPatch : MonoBehaviour
     {
         private static bool _instantiating = true;
@@ -56,10 +56,7 @@ namespace OoLunar.LethalCompanyPatched.Patches
                 sprint = 0f;
             }
 
-            if (LethalCompanyPatchedPlugin.ShowHudPercentages.Value)
-            {
-                _hudPercentagesText.text = $"{health}\n\n\n\n{sprint}%";
-            }
+            _hudPercentagesText.text = $"{health}\n\n\n\n{sprint}%";
         }
     }
 }

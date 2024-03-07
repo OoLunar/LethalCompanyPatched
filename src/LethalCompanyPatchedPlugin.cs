@@ -40,6 +40,11 @@ namespace OoLunar.LethalCompanyPatched
                 }
             }
 
+            if (ShowHudPercentages.Value)
+            {
+                _harmony.PatchAll(typeof(HUDManagerPatch));
+            }
+
             Logger.LogInfo($"{MyPluginInfo.PLUGIN_NAME} finished loading!");
         }
     }

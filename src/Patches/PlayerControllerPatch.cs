@@ -101,7 +101,8 @@ namespace OoLunar.LethalCompanyPatched.Patches
             PlayerControllerB? playerController = GameNetworkManager.Instance.localPlayerController;
 
             // Testing conditions where the player crouch state cannot be changed
-            if (playerController == null
+            if (!LethalCompanyPatchedPlugin.CrouchHold.Value
+                || playerController == null
                 || (__instance.IsOwner && __instance.isPlayerControlled && (!__instance.IsServer || __instance.isHostPlayerObject)) // Player put on the mask
                 || __instance.isTestingPlayer // Unsure?
                 || __instance.inTerminalMenu // Player is in a terminal
@@ -115,7 +116,7 @@ namespace OoLunar.LethalCompanyPatched.Patches
                 return;
             }
 
-            // The player is no longer holding the crouch button OR the player was forced to uncrouch
+            // The player is no longer holding the crouch button, OR the player was forced to uncrouch, OR crouch hold is disabled
             playerController.isCrouching = false;
             playerController.playerBodyAnimator.SetBool("crouching", false);
         }

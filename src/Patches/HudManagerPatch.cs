@@ -1,3 +1,5 @@
+using System;
+using GameNetcodeStuff;
 using HarmonyLib;
 using TMPro;
 using UnityEngine;
@@ -32,7 +34,7 @@ namespace OoLunar.LethalCompanyPatched.Patches
             _hudPercentagesText.fontSize = 12f;
             _hudPercentagesText.margin = new Vector4(0f, -36f, 100f, 0f);
             _hudPercentagesText.alignment = (TextAlignmentOptions)260;
-            _hudPercentagesText.text = $"{100}\n\n\n{100}%";
+            _hudPercentagesText.text = "";
             _instantiating = false;
         }
 
@@ -44,19 +46,20 @@ namespace OoLunar.LethalCompanyPatched.Patches
         [HarmonyPatch(typeof(HUDManager), "Update")]
         public static void Update()
         {
-            if (GameNetworkManager.Instance.localPlayerController == null || _instantiating || _hudPercentagesText == null)
+            PlayerControllerB player_controller = GameNetworkManager.Instance.localPlayerController;
+            if (player_controller == null 
+                || _instantiating 
+                || _hudPercentagesText == null)
             {
                 return;
             }
-
-            float health = Mathf.RoundToInt(GameNetworkManager.Instance.localPlayerController.health);
-            float sprint = Mathf.RoundToInt(((GameNetworkManager.Instance.localPlayerController.sprintMeter * 100f) - 10f) / 90f * 100f);
-            if (sprint < 0f)
-            {
-                sprint = 0f;
-            }
-
-            _hudPercentagesText.text = $"{health}\n\n\n\n{sprint}%";
+            float health = Mathf.RoundToInt(player_controller.health);
+            int sprint = Math.Max(
+                Mathf.RoundToInt(((player_controller.sprintMeter * 100f) - 10f) / 90f * 100f), 
+                0
+                );
+            _hudPercentagesText.text = LethalCompanyPatchedPlugin.ShowHudPercentages.Value ? $"{health}\n\n\n\n{sprint}%" : "";
+           
         }
     }
 }

@@ -6,12 +6,13 @@
     "configurations": [
         {
             "name": ".NET Core Launch (console)",
-            "type": "cppvsdbg",
+            "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "copy",
-            "program": "c:/Program Files (x86)/Steam/steam.exe",
+            "program": "C:/Program Files (x86)/Steam/steamapps/common/Lethal Company/Lethal Company.exe",
             "args": [
-                "steam://rungameid/1966720"
+                "--doorstop-enable true",
+                "--doorstop-target 'C:/Program Files (x86)/Steam/steamapps/common/Lethal Company/BepInEx/core/BepInEx.Preloader.dll'"
             ],
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",

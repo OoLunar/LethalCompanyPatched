@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <AssemblyName>OoLunar.LethalCompanyPatched</AssemblyName>
+    <AssemblyName>LethalCompanyPatched</AssemblyName>
     <Description>A continuation of An0n_Patches.</Description>
     <Version>1.1.0</Version>
     <LangVersion>Preview</LangVersion>
@@ -13,10 +13,10 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
-    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.1" PrivateAssets="all" />
+    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.2" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.*" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" />
-    <PackageReference Include="UnityEngine.Modules" Version="2023.2.5" IncludeAssets="compile" />
+    <PackageReference Include="UnityEngine.Modules" Version="6000.0.5" IncludeAssets="compile" />
     <Reference Include="Assembly-CSharp" HintPath="c:/Program Files (x86)/Steam/steamapps/common/Lethal Company/Lethal Company_Data/Managed/Assembly-CSharp.dll" Publicize="true" />
     <Reference Include="Unity.InputSystem" HintPath="c:/Program Files (x86)/Steam/steamapps/common/Lethal Company/Lethal Company_Data/Managed/Unity.InputSystem.dll" Publicize="true" />
     <Reference Include="Unity.Netcode.Runtime" HintPath="c:/Program Files (x86)/Steam/steamapps/common/Lethal Company/Lethal Company_Data/Managed/Unity.Netcode.Runtime.dll" Publicize="true" />

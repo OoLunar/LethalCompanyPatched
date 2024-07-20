@@ -26,7 +26,6 @@ namespace OoLunar.LethalCompanyPatched
         {
             // Plugin startup logic
             Logger.LogDebug($"{MyPluginInfo.PLUGIN_NAME} started loading!");
-
             StaticLogger = Logger;
             CrouchHold = Config.Bind("General", "crouchHold", true, "Enable/disable crouch hold. If disabled, crouch functions as a toggle with the additional behavior of going back into a crouch upon landing from a crouch jump.");
             JumpDelay = Config.Bind("General", "jumpDelay", 0.0f, "Configure the time till jump, defaults to instant with 0.0. Vanilla is 0.15");
@@ -34,16 +33,14 @@ namespace OoLunar.LethalCompanyPatched
             Slipperiness = Config.Bind("General", "slipperiness", 10f, "The amount of slipperiness when running and changing direction. 10-15f is a good value for little to no slippery feeling. Vanilla is 5.0");
             ShowHudPercentages = Config.Bind("General", "showHealthStamina", true, "Show your health and sprint/stamina % on the HUD.");
 
+            // Find all types in this assembly that have the LethalPatchAttribute and patch them.
             foreach (Type type in typeof(LethalCompanyPatchedPlugin).Assembly.GetTypes())
             {
-                // Find all types in this assembly that have the LethalPatchAttribute applied to them.
                 if (type.GetCustomAttribute<LethalPatchAttribute>() is not null)
                 {
                     _harmony.PatchAll(type);
                 }
             }
-            _harmony.PatchAll(typeof(HUDManagerPatch));
-
 
             Logger.LogInfo($"{MyPluginInfo.PLUGIN_NAME} finished loading!");
         }

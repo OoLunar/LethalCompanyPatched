@@ -26,9 +26,11 @@ namespace OoLunar.LethalCompanyPatched.Patches
             GameObject val3 = Instantiate(val, val2.transform);
             val3.name = "HPSP";
 
+            // Find the child of the instantiated object and set its position.
             GameObject gameObject = val3.transform.GetChild(0).gameObject;
-            RectTransform component = gameObject.GetComponent<RectTransform>();
-            component.anchoredPosition = new Vector2(-45f, 10f);
+            gameObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(-45f, 10f);
+
+            // Stylize the text.
             _hudPercentagesText = gameObject.GetComponent<TextMeshProUGUI>();
             _hudPercentagesText.faceColor = new Color(255f, 0f, 0f, 255f);
             _hudPercentagesText.fontSize = 12f;
@@ -46,20 +48,15 @@ namespace OoLunar.LethalCompanyPatched.Patches
         [HarmonyPatch(typeof(HUDManager), "Update")]
         public static void Update()
         {
-            PlayerControllerB player_controller = GameNetworkManager.Instance.localPlayerController;
-            if (player_controller == null
-                || _instantiating
-                || _hudPercentagesText == null)
+            PlayerControllerB? playerController = GameNetworkManager.Instance.localPlayerController;
+            if (playerController == null || _instantiating || _hudPercentagesText == null)
             {
                 return;
             }
-            float health = Mathf.RoundToInt(player_controller.health);
-            int sprint = Math.Max(
-                Mathf.RoundToInt(((player_controller.sprintMeter * 100f) - 10f) / 90f * 100f),
-                0
-                );
-            _hudPercentagesText.text = LethalCompanyPatchedPlugin.ShowHudPercentages.Value ? $"{health}\n\n\n\n{sprint}%" : "";
 
+            float health = Mathf.RoundToInt(playerController.health);
+            int sprint = Math.Max(Mathf.RoundToInt(((playerController.sprintMeter * 100f) - 10f) / 90f * 100f), 0);
+            _hudPercentagesText.text = LethalCompanyPatchedPlugin.ShowHudPercentages.Value ? $"{health}\n\n\n\n{sprint}%" : "";
         }
     }
 }

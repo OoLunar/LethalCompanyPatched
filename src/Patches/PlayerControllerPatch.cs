@@ -17,7 +17,7 @@ namespace OoLunar.LethalCompanyPatched.Patches
         private static readonly FieldInfo? _jumpDelayConfigField = AccessTools.Field(typeof(LethalCompanyPatchedPlugin), nameof(LethalCompanyPatchedPlugin.JumpDelay));
         private static readonly FieldInfo? _instantSprintConfigField = AccessTools.Field(typeof(LethalCompanyPatchedPlugin), nameof(LethalCompanyPatchedPlugin.InstantSprint));
         private static readonly MethodInfo? _configEntryFloatValueMethod = AccessTools.Method(typeof(ConfigEntry<float>), "get_Value");
-        private static readonly MethodInfo? _configEntryBoolValueMethod = AccessTools.Method(typeof(ConfigEntry<bool>), "get_Value");
+
         private static bool _tempCrouch;
         private static readonly int Crouching = Animator.StringToHash("crouching");
         private static readonly int StartCrouching = Animator.StringToHash("startCrouching");
@@ -36,15 +36,8 @@ namespace OoLunar.LethalCompanyPatched.Patches
             return null;
         }
 
-        private static void ReplaceInstruction(
-            List<CodeInstruction> instructions,
-            List<CodeInstruction> new_instructions,
-            Predicate<int> predicate,
-            int lookAhead = 0,
-            int lookBehind = 0
-            )
+        private static void ReplaceInstruction(List<CodeInstruction> instructions, List<CodeInstruction> new_instructions, Predicate<int> predicate, int lookAhead = 0, int lookBehind = 0)
         {
-
             if (FindInstruction(instructions, predicate, lookAhead, lookBehind) is { } i)
             {
                 instructions.RemoveAt(i);
@@ -67,12 +60,7 @@ namespace OoLunar.LethalCompanyPatched.Patches
                 new CodeInstruction(OpCodes.Callvirt, _configEntryFloatValueMethod),
             ];
 
-            ReplaceInstruction(list,
-                new_instructions,
-                i => list[i + 1].opcode == OpCodes.Newobj
-                     && (list[i + 1].operand as ConstructorInfo)?.DeclaringType == typeof(WaitForSeconds),
-                1);
-
+            ReplaceInstruction(list, new_instructions, i => list[i + 1].opcode == OpCodes.Newobj && (list[i + 1].operand as ConstructorInfo)?.DeclaringType == typeof(WaitForSeconds), 1);
             LethalCompanyPatchedPlugin.StaticLogger.LogDebug("Patched Instant-Jump");
             return list;
         }
@@ -90,15 +78,7 @@ namespace OoLunar.LethalCompanyPatched.Patches
 
             // list[i] = new CodeInstruction(OpCodes.Ldc_R4, LethalCompanyPatchedPlugin.Slipperiness.Value);
             // Replace (5.0 / (this.carryWeight * 1.5)) with (LethalCompanyPatchedPlugin.Slipperiness.Value / (this.carryWeight * 1.5))
-            ReplaceInstruction(list,
-                new_instructions,
-                i => list[i].opcode == OpCodes.Ldc_R4
-                     && Mathf.Approximately((float)list[i].operand, 5f)
-                     && list[i + 2].LoadsField(_playerCarryWeight)
-                     && list[i + 3].opcode == OpCodes.Ldc_R4
-                     && Mathf.Approximately((float)list[i + 3].operand, 1.5f),
-                3);
-
+            ReplaceInstruction(list, new_instructions, i => list[i].opcode == OpCodes.Ldc_R4 && Mathf.Approximately((float)list[i].operand, 5f) && list[i + 2].LoadsField(_playerCarryWeight) && list[i + 3].opcode == OpCodes.Ldc_R4 && Mathf.Approximately((float)list[i + 3].operand, 1.5f), 3);
             LethalCompanyPatchedPlugin.StaticLogger.LogDebug("Patched Slipperiness");
             return list;
         }
@@ -116,16 +96,7 @@ namespace OoLunar.LethalCompanyPatched.Patches
 
             // list[i + 2] = new CodeInstruction(OpCodes.Ldc_R4, LethalCompanyPatchedPlugin.InstantSprint.Value);
             // Replace Time.DeltaTime * 1f with Time.DeltaTime * LethalCompanyPatchedPlugin.InstantSprint.Value
-            ReplaceInstruction(list,
-                new_instructions,
-                i => list[i - 3].opcode == OpCodes.Ldfld
-                     && list[i - 3].ToString() == "ldfld float GameNetcodeStuff.PlayerControllerB::sprintMultiplier"
-                     && list[i - 2].opcode == OpCodes.Ldc_R4
-                     && Mathf.Approximately((float)list[i - 2].operand, 2.25f)
-                     && list[i].opcode == OpCodes.Ldc_R4
-                     && Mathf.Approximately((float)list[i].operand, 1f),
-                0, 3);
-
+            ReplaceInstruction(list, new_instructions, i => list[i - 3].opcode == OpCodes.Ldfld && list[i - 3].ToString() == "ldfld float GameNetcodeStuff.PlayerControllerB::sprintMultiplier" && list[i - 2].opcode == OpCodes.Ldc_R4 && Mathf.Approximately((float)list[i - 2].operand, 2.25f) && list[i].opcode == OpCodes.Ldc_R4 && Mathf.Approximately((float)list[i].operand, 1f), 0, 3);
             LethalCompanyPatchedPlugin.StaticLogger.LogDebug("Patched Instant-Sprint");
             return list;
         }
@@ -196,17 +167,13 @@ namespace OoLunar.LethalCompanyPatched.Patches
             __instance.playerBodyAnimator.SetBool(Crouching, true);
         }
 
-        private static bool CanJump(PlayerControllerB __instance)
-        {
-            RaycastHit hit = (RaycastHit)AccessTools.Field(typeof(PlayerControllerB), "hit").GetValue(__instance);
-            return !Physics.Raycast(
-                __instance.gameplayCamera.transform.position,
-                Vector3.up,
-                out hit,
-                0.72f,
-                __instance.playersManager.collidersAndRoomMask,
-                QueryTriggerInteraction.Ignore
-            );
-        }
+        private static bool CanJump(PlayerControllerB __instance) => !Physics.Raycast(
+            __instance.gameplayCamera.transform.position,
+            Vector3.up,
+            out __instance.hit,
+            0.72f,
+            __instance.playersManager.collidersAndRoomMask,
+            QueryTriggerInteraction.Ignore
+        );
     }
 }

@@ -33,7 +33,7 @@ namespace OoLunar.LethalCompanyPatched
             InstantSprint = Config.Bind("General", "instantSprint", 2.25f, "How fast to accelerate to sprint value of 2.25. 2.25 is the max, so it's instant acceleration. Vanilla is 1.0");
             Slipperiness = Config.Bind("General", "slipperiness", 10f, "The amount of slipperiness when running and changing direction. 10-15f is a good value for little to no slippery feeling. Vanilla is 5.0");
             ShowHudPercentages = Config.Bind("General", "showHealthStamina", true, "Show your health and sprint/stamina % on the HUD.");
-            
+
             foreach (Type type in typeof(LethalCompanyPatchedPlugin).Assembly.GetTypes())
             {
                 // Find all types in this assembly that have the LethalPatchAttribute applied to them.
@@ -43,7 +43,7 @@ namespace OoLunar.LethalCompanyPatched
                 }
             }
             _harmony.PatchAll(typeof(HUDManagerPatch));
-            
+
 
             Logger.LogInfo($"{MyPluginInfo.PLUGIN_NAME} finished loading!");
         }

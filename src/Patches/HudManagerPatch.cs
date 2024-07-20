@@ -47,19 +47,19 @@ namespace OoLunar.LethalCompanyPatched.Patches
         public static void Update()
         {
             PlayerControllerB player_controller = GameNetworkManager.Instance.localPlayerController;
-            if (player_controller == null 
-                || _instantiating 
+            if (player_controller == null
+                || _instantiating
                 || _hudPercentagesText == null)
             {
                 return;
             }
             float health = Mathf.RoundToInt(player_controller.health);
             int sprint = Math.Max(
-                Mathf.RoundToInt(((player_controller.sprintMeter * 100f) - 10f) / 90f * 100f), 
+                Mathf.RoundToInt(((player_controller.sprintMeter * 100f) - 10f) / 90f * 100f),
                 0
                 );
             _hudPercentagesText.text = LethalCompanyPatchedPlugin.ShowHudPercentages.Value ? $"{health}\n\n\n\n{sprint}%" : "";
-           
+
         }
     }
 }

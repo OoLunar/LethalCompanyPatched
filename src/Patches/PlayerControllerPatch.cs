@@ -12,93 +12,116 @@ namespace OoLunar.LethalCompanyPatched.Patches
     [HarmonyPatch(typeof(PlayerControllerB)), LethalPatch]
     internal class PlayerControllerPatch
     {
-        private static readonly FieldInfo _playerCarryWeight = typeof(PlayerControllerB).GetField("carryWeight");
+        private static readonly FieldInfo? _playerCarryWeight = AccessTools.Field(typeof(PlayerControllerB), "carryWeight");
         private static readonly FieldInfo? _slipperinessConfigField = AccessTools.Field(typeof(LethalCompanyPatchedPlugin), nameof(LethalCompanyPatchedPlugin.Slipperiness));
         private static readonly FieldInfo? _jumpDelayConfigField = AccessTools.Field(typeof(LethalCompanyPatchedPlugin), nameof(LethalCompanyPatchedPlugin.JumpDelay));
         private static readonly FieldInfo? _instantSprintConfigField = AccessTools.Field(typeof(LethalCompanyPatchedPlugin), nameof(LethalCompanyPatchedPlugin.InstantSprint));
         private static readonly MethodInfo? _configEntryFloatValueMethod = AccessTools.Method(typeof(ConfigEntry<float>), "get_Value");
 
         private static bool _tempCrouch;
-        private static readonly int Crouching = Animator.StringToHash("crouching");
-        private static readonly int StartCrouching = Animator.StringToHash("startCrouching");
+        private static readonly int _crouchingId = Animator.StringToHash("crouching");
+        private static readonly int _startCrouchingId = Animator.StringToHash("startCrouching");
 
-        private static int? FindInstruction(List<CodeInstruction> instructions, Predicate<int> predicate, int lookAhead = 0, int lookBehind = 0)
+        private static bool ReplaceInstruction(List<CodeInstruction> instructions, List<CodeInstruction> newInstructions, Predicate<int> whereClause, int lookAhead = 0, int lookBehind = 0)
         {
-            int max_index = instructions.Count - lookAhead;
-            for (int index = lookBehind; index < max_index; index++)
+            // Locate the first instruction that matches the predicate
+            int maxIndex = instructions.Count - lookAhead;
+            for (int index = lookBehind; index < maxIndex; index++)
             {
-                if (predicate.Invoke(index))
+                if (whereClause.Invoke(index))
                 {
-                    return index;
+                    instructions.RemoveAt(index);
+                    instructions.InsertRange(index, newInstructions);
+                    return true;
                 }
             }
 
-            return null;
-        }
-
-        private static void ReplaceInstruction(List<CodeInstruction> instructions, List<CodeInstruction> new_instructions, Predicate<int> predicate, int lookAhead = 0, int lookBehind = 0)
-        {
-            if (FindInstruction(instructions, predicate, lookAhead, lookBehind) is { } i)
-            {
-                instructions.RemoveAt(i);
-                instructions.InsertRange(i, new_instructions);
-            }
-            else
-            {
-                LethalCompanyPatchedPlugin.StaticLogger.LogError("Failed to replace instruction");
-            }
+            return false;
         }
 
         [HarmonyTranspiler]
         [HarmonyPatch(typeof(PlayerControllerB), "PlayerJump", MethodType.Enumerator)]
         public static IEnumerable<CodeInstruction> RemoveJumpDelay(IEnumerable<CodeInstruction> instructions)
         {
-            List<CodeInstruction> list = [.. instructions];
-            List<CodeInstruction> new_instructions =
+            List<CodeInstruction> currentInstructions = [.. instructions];
+            List<CodeInstruction> newInstructions =
             [
                 new CodeInstruction(OpCodes.Ldsfld, _jumpDelayConfigField),
                 new CodeInstruction(OpCodes.Callvirt, _configEntryFloatValueMethod),
             ];
 
-            ReplaceInstruction(list, new_instructions, i => list[i + 1].opcode == OpCodes.Newobj && (list[i + 1].operand as ConstructorInfo)?.DeclaringType == typeof(WaitForSeconds), 1);
-            LethalCompanyPatchedPlugin.StaticLogger.LogDebug("Patched Instant-Jump");
-            return list;
+            if (ReplaceInstruction(currentInstructions, newInstructions, instructionIndex =>
+                currentInstructions[instructionIndex + 1].opcode == OpCodes.Newobj // new WaitForSeconds
+                && ((ConstructorInfo)currentInstructions[instructionIndex + 1].operand).DeclaringType == typeof(WaitForSeconds), 1))
+            {
+                LethalCompanyPatchedPlugin.StaticLogger.LogDebug("Patched Jump-Delay");
+            }
+            else
+            {
+                LethalCompanyPatchedPlugin.StaticLogger.LogError("Failed to patch Jump-Delay, the player's jump will have it's default delay.");
+            }
+
+            return currentInstructions;
         }
 
         [HarmonyTranspiler]
         [HarmonyPatch(typeof(PlayerControllerB), "Update")]
         public static IEnumerable<CodeInstruction> FixSlipperiness(IEnumerable<CodeInstruction> instructions)
         {
-            List<CodeInstruction> list = [.. instructions];
-            List<CodeInstruction> new_instructions =
+            List<CodeInstruction> currentInstructions = [.. instructions];
+            List<CodeInstruction> newInstructions =
             [
                 new CodeInstruction(OpCodes.Ldsfld, _slipperinessConfigField),
                 new CodeInstruction(OpCodes.Callvirt, _configEntryFloatValueMethod),
             ];
 
-            // list[i] = new CodeInstruction(OpCodes.Ldc_R4, LethalCompanyPatchedPlugin.Slipperiness.Value);
-            // Replace (5.0 / (this.carryWeight * 1.5)) with (LethalCompanyPatchedPlugin.Slipperiness.Value / (this.carryWeight * 1.5))
-            ReplaceInstruction(list, new_instructions, i => list[i].opcode == OpCodes.Ldc_R4 && Mathf.Approximately((float)list[i].operand, 5f) && list[i + 2].LoadsField(_playerCarryWeight) && list[i + 3].opcode == OpCodes.Ldc_R4 && Mathf.Approximately((float)list[i + 3].operand, 1.5f), 3);
-            LethalCompanyPatchedPlugin.StaticLogger.LogDebug("Patched Slipperiness");
-            return list;
+            if (ReplaceInstruction(currentInstructions, newInstructions, instructionIndex =>
+                // We're looking for where the slipperiness field is set to 5
+                // And instead pushing the value of LethalCompanyPatchedPlugin.Slipperiness
+                currentInstructions[instructionIndex].opcode == OpCodes.Ldc_R4
+                && Mathf.Approximately((float)currentInstructions[instructionIndex].operand, 5f)
+                && currentInstructions[instructionIndex + 2].LoadsField(_playerCarryWeight)
+                && currentInstructions[instructionIndex + 3].opcode == OpCodes.Ldc_R4
+                && Mathf.Approximately((float)currentInstructions[instructionIndex + 3].operand, 1.5f), 3))
+            {
+                LethalCompanyPatchedPlugin.StaticLogger.LogDebug("Patched Slipperiness");
+            }
+            else
+            {
+                LethalCompanyPatchedPlugin.StaticLogger.LogError("Failed to patch Slipperiness, the player will have the default slipperiness.");
+            }
+
+            return currentInstructions;
         }
 
         [HarmonyTranspiler]
         [HarmonyPatch(typeof(PlayerControllerB), "Update")]
         public static IEnumerable<CodeInstruction> InstantSprint(IEnumerable<CodeInstruction> instructions)
         {
-            List<CodeInstruction> list = [.. instructions];
-            List<CodeInstruction> new_instructions =
+            List<CodeInstruction> currentInstructions = [.. instructions];
+            List<CodeInstruction> newInstructions =
             [
                 new CodeInstruction(OpCodes.Ldsfld, _instantSprintConfigField),
                 new CodeInstruction(OpCodes.Callvirt, _configEntryFloatValueMethod),
             ];
 
-            // list[i + 2] = new CodeInstruction(OpCodes.Ldc_R4, LethalCompanyPatchedPlugin.InstantSprint.Value);
-            // Replace Time.DeltaTime * 1f with Time.DeltaTime * LethalCompanyPatchedPlugin.InstantSprint.Value
-            ReplaceInstruction(list, new_instructions, i => list[i - 3].opcode == OpCodes.Ldfld && list[i - 3].ToString() == "ldfld float GameNetcodeStuff.PlayerControllerB::sprintMultiplier" && list[i - 2].opcode == OpCodes.Ldc_R4 && Mathf.Approximately((float)list[i - 2].operand, 2.25f) && list[i].opcode == OpCodes.Ldc_R4 && Mathf.Approximately((float)list[i].operand, 1f), 0, 3);
-            LethalCompanyPatchedPlugin.StaticLogger.LogDebug("Patched Instant-Sprint");
-            return list;
+            if (ReplaceInstruction(currentInstructions, newInstructions, instructionIndex =>
+                // We're looking for when the player starts and stops sprinting, and changing the sprint multiplier to 2.25
+                currentInstructions[instructionIndex - 3].opcode == OpCodes.Ldfld
+                && currentInstructions[instructionIndex - 3].ToString() == "ldfld float GameNetcodeStuff.PlayerControllerB::sprintMultiplier"
+                && currentInstructions[instructionIndex - 2].opcode == OpCodes.Ldc_R4
+                && Mathf.Approximately((float)currentInstructions[instructionIndex - 2].operand, 2.25f)
+                && currentInstructions[instructionIndex].opcode == OpCodes.Ldc_R4
+                && Mathf.Approximately((float)currentInstructions[instructionIndex].operand, 1f), 0, 3))
+            {
+                LethalCompanyPatchedPlugin.StaticLogger.LogDebug("Patched Instant-Sprint");
+            }
+            else
+            {
+                LethalCompanyPatchedPlugin.StaticLogger.LogError("Failed to patch Instant-Sprint, the player will have the default sprint speed.");
+            }
+
+            return currentInstructions;
         }
 
         [HarmonyPostfix]
@@ -117,7 +140,7 @@ namespace OoLunar.LethalCompanyPatched.Patches
                 || __instance.isPlayerDead // Player is dead
                 || __instance.quickMenuManager.isMenuOpen // Player has the pause menu open
                 || IngamePlayerSettings.Instance.playerInput.actions.FindAction("Crouch", true).IsPressed() // Player is holding the crouch button
-                || !playerController.playerBodyAnimator.GetBool(Crouching) // Other players see that this player is not crouching
+                || !playerController.playerBodyAnimator.GetBool(_crouchingId) // Other players see that this player is not crouching
                 || !CanJump(__instance)) // Player is in a space where they cannot jump/must crouch
             {
                 return;
@@ -125,7 +148,7 @@ namespace OoLunar.LethalCompanyPatched.Patches
 
             // The player is no longer holding the crouch button, OR the player was forced to uncrouch, OR crouch hold is disabled
             playerController.isCrouching = false;
-            playerController.playerBodyAnimator.SetBool(Crouching, false);
+            playerController.playerBodyAnimator.SetBool(_crouchingId, false);
         }
 
         [HarmonyPrefix]
@@ -163,8 +186,8 @@ namespace OoLunar.LethalCompanyPatched.Patches
                 return;
             }
 
-            __instance.playerBodyAnimator.SetTrigger(StartCrouching);
-            __instance.playerBodyAnimator.SetBool(Crouching, true);
+            __instance.playerBodyAnimator.SetTrigger(_startCrouchingId);
+            __instance.playerBodyAnimator.SetBool(_crouchingId, true);
         }
 
         private static bool CanJump(PlayerControllerB __instance) => !Physics.Raycast(

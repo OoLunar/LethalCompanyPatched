@@ -18,8 +18,8 @@
             "command": "cp",
             "type": "shell",
             "args": [
-                "${workspaceFolder}/src/bin/Debug/netstandard2.1/OoLunar.LethalCompanyPatched.dll",
-                "C:/Program Files (x86)/Steam/steamapps/common/Lethal Company/BepInEx/plugins/OoLunar.LethalCompanyPatched.dll"
+                "${workspaceFolder}/src/bin/Debug/netstandard2.1/LethalCompanyPatched.dll",
+                "C:/Program Files (x86)/Steam/steamapps/common/Lethal Company/BepInEx/plugins/LethalCompanyPatched.dll"
             ],
             "dependsOn": "build"
         },

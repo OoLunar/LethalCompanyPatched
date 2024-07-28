@@ -1,5 +1,6 @@
 ## What's Changed
-* Don't show health and stamina percentage if disabled in the config by @lukeprime in https://github.com/OoLunar/LethalCompanyPatched/pull/2
-* Make crouch hold an option by @lukeprime in https://github.com/OoLunar/LethalCompanyPatched/pull/3
+* Config values now update correctly when the configuration is modified during the game - @jaquobia
+* Fixed a poor GUI location bug with the HUD percentages - @jaquobia
+* Compiled for the latest version of Lethal Company
 
-**Full Changelog**: https://github.com/OoLunar/LethalCompanyPatched/compare/1.0.0...1.1.0
+**Full Changelog**: https://github.com/OoLunar/LethalCompanyPatched/compare/1.1.0...1.2.0

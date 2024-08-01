@@ -15,7 +15,7 @@
         },
         {
             "label": "copy",
-            "command": "cp",
+            "command": "copy",
             "type": "shell",
             "args": [
                 "${workspaceFolder}/src/bin/Debug/netstandard2.1/LethalCompanyPatched.dll",

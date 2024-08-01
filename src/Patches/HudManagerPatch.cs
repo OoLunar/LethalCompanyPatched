@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace OoLunar.LethalCompanyPatched.Patches
 {
-    [HarmonyPatch]
+    [HarmonyPatch, LethalPatch]
     internal class HUDManagerPatch : MonoBehaviour
     {
         private static bool _instantiating = true;
@@ -27,11 +27,11 @@ namespace OoLunar.LethalCompanyPatched.Patches
             val3.name = "HPSP";
 
             // Find the child of the instantiated object and set its position.
-            GameObject gameObject = val3.transform.GetChild(0).gameObject;
-            gameObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(-45f, 10f);
+            GameObject _hudPercentages = val3.transform.GetChild(0).gameObject;
+            _hudPercentages.GetComponent<RectTransform>().anchoredPosition = new Vector2(-45f, 10f);
 
             // Stylize the text.
-            _hudPercentagesText = gameObject.GetComponent<TextMeshProUGUI>();
+            _hudPercentagesText = _hudPercentages.GetComponent<TextMeshProUGUI>();
             _hudPercentagesText.faceColor = new Color(255f, 0f, 0f, 255f);
             _hudPercentagesText.fontSize = 12f;
             _hudPercentagesText.margin = new Vector4(0f, -36f, 100f, 0f);

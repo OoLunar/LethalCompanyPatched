@@ -3,7 +3,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>LethalCompanyPatched</AssemblyName>
     <Description>A continuation of An0n_Patches.</Description>
-    <Version>1.2.0</Version>
+    <Version>1.2.1</Version>
     <LangVersion>Preview</LangVersion>
     <Nullable>enable</Nullable>
     <RestoreAdditionalProjectSources>

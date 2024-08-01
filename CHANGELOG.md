@@ -1,6 +1,4 @@
 ## What's Changed
-* Config values now update correctly when the configuration is modified during the game - @jaquobia
-* Fixed a poor GUI location bug with the HUD percentages - @jaquobia
-* Compiled for the latest version of Lethal Company
+* Stamina GUI now shows again, closing [#5](https://github.com/OoLunar/LethalCompanyPatched/issues/5)
 
-**Full Changelog**: https://github.com/OoLunar/LethalCompanyPatched/compare/1.1.0...1.2.0
+**Full Changelog**: https://github.com/OoLunar/LethalCompanyPatched/compare/1.2.0...1.2.1
